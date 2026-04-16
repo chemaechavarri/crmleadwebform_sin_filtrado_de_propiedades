@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="website_lead_thank_you" name="Gracias, recibimos tu información">
+        <t t-call="website.layout">
+            <div class="container mt-5" style="max-width: 800px; text-align: center;">
+                <h1 class="mb-3">¡Gracias!</h1>
+
+                <p class="lead">
+                    Hemos recibido tu información correctamente.
+                </p>
+
+                <p class="text-muted">
+                    Nuestro equipo se pondrá en contacto contigo muy pronto.
+                </p>
+
+                <a href="/" class="btn btn-primary mt-4">
+                    Volver al inicio
+                </a>
+            </div>
+        </t>
+    </template>
+
+</odoo>
