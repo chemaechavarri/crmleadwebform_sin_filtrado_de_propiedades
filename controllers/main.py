@@ -86,6 +86,34 @@ class WebsiteLeadWebForm(http.Controller):
                 
         properties = all_properties.with_context(allowed_company_ids=allowed_company_ids)
 
+        occupied_property_ids = []
+
+        if parsed_move_in_date:
+            Contract = request.env['sale.order']
+
+            for prop in all_properties:
+                contracts = Contract.sudo().search([
+                    ('x_account_analytic_account_id', '=', prop.id),
+                    ('x_studio_fecha_de_fin_de_alquiler', '!=', False),
+                    ('state', '!=', 'cancel'),
+                ], order='x_studio_fecha_de_fin_de_alquiler desc')
+
+                # Si no tiene contratos, no se marca como ocupada
+                if not contracts:
+                    continue
+
+                # Tomamos la fecha final más lejana
+                latest_end_date = contracts[0].x_studio_fecha_de_fin_de_alquiler
+
+                if isinstance(latest_end_date, datetime):
+                    latest_end_date = latest_end_date.date()
+
+                available_date = latest_end_date + timedelta(days=5)
+
+                # Si el move-in es antes de la fecha disponible, se marca para mostrar aviso
+                if parsed_move_in_date < available_date:
+                    occupied_property_ids.append(prop.id)
+
 
         countries = request.env['res.country'].sudo().search([], order='name')
         
@@ -96,6 +124,7 @@ class WebsiteLeadWebForm(http.Controller):
             'company_display_name_map': company_display_name_map,
             'countries': countries,
             'move_in_date': move_in_date,
+            'occupied_property_ids': occupied_property_ids,
         })
 
 
