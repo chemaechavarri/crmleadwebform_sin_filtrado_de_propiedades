@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <template id="website_lead_form" name="Contacto Inicial Leasing">
+        <t t-call="website.layout">
+            <div class="container mt-5" style="max-width: 900px;">
+                <h1 class="mb-2">Contacto Inicial Leasing</h1>
+                <p class="mb-4 text-muted">
+                    Registra la información básica del prospecto tal y como se obtuvo durante el primer contacto
+                </p>
+
+                <form action="/lead/submit" method="post">
+                    <input type="hidden" name="csrf_token"
+                           t-att-value="request.csrf_token()"/>
+
+                    <!-- Identificador -->
+                    <div class="mb-3">
+                        <label class="form-label">Nombre Hubspot *</label>
+                        <input type="text" name="name"
+                               class="form-control" required="required"/>
+                    </div>
+
+                    <!-- Fecha Move In -->
+                    <div class="mb-3">
+                        <label class="form-label">Fecha de Move-In</label>
+                        <input type="date"
+                               name="date_deadline"
+                               class="form-control"
+                               t-att-value="move_in_date"
+                               onchange="
+                                   var company = document.querySelector('[name=company_id]').value || '';
+                                   var url = '/lead?company_id=' + company + '&amp;move_in_date=' + this.value;
+                                   window.location.href = url;
+                               "/>
+                    </div>
+
+
+                    <!-- Empresa -->
+                    <div class="mb-3">
+                        <label class="form-label">Edificio</label>
+                        <select name="company_id" class="form-select"
+                                onchange="
+                                    var date = document.querySelector('[name=date_deadline]').value || '';
+                                    var url = '/lead?company_id=' + this.value + '&amp;move_in_date=' + date;
+                                    window.location.href = url;
+                                ">
+                            <option value="">Seleccionar</option>
+                            <t t-foreach="allowed_companies" t-as="c">
+                                <option t-att-value="c.id"
+                                        t-att-selected="c.id == selected_company_id">
+                                    <t t-esc="company_display_name_map.get(c.name, c.name)"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+
+                    <!-- Propiedad-->
+                    <div class="mb-3">
+                        <label class="form-label">Unidad</label>
+                    
+
+                    
+                        <select name="x_property_id" class="form-select">
+                            <option value="">Seleccionar</option>
+                            <t t-foreach="properties" t-as="p">
+                                <option t-att-value="p.id">
+                                    <t t-esc="p.display_name"/>
+                                </option>
+                            </t>
+                        </select>
+                    </div>
+
+
+                    <!-- Nombre Arrendatario -->
+                    <div class="mb-3">
+                        <label class="form-label">Nombre del Arrendatario</label>
+                        <input type="text" name="contact_name"
+                               class="form-control"
+                               placeholder="Nombre completo"/>
+                    </div>
+
+                    <!-- Teléfono -->
+                    <div class="mb-3">
+                        <label class="form-label">Número de teléfono *</label>
+                    
+                        <div class="input-group">
+                            <!-- Código país -->
+                            <select name="phone_country_code"
+                                    class="form-select"
+                                    style="max-width: 110px;"
+                                    required="required">
+                                <t t-foreach="countries" t-as="c">
+                                    <t t-if="c.phone_code">
+                                        <option t-att-value="'+' + str(c.phone_code)"
+                                                t-att-selected="c.code == 'MX'">
+                                            +<t t-esc="c.phone_code"/>
+                                        </option>
+                                    </t>
+                                </t>
+                            </select>
+                    
+                            <!-- Número -->
+                            <input type="tel"
+                                   name="phone"
+                                   class="form-control"
+                                   placeholder="Número telefónico"
+                                   required="required"/>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="mb-3">
+                        <label class="form-label">Tu correo *</label>
+                        <input type="email" name="email_from"
+                               class="form-control"
+                               required="required"/>
+                    </div>
+
+                    <!-- Comentarios -->
+                    <div class="mb-4">
+                        <label class="form-label">Comentarios</label>
+                        <textarea name="description"
+                                  class="form-control"
+                                  rows="4"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        Enviar
+                    </button>
+                </form>
+            </div>
+        </t>
+    </template>
+
+</odoo>
