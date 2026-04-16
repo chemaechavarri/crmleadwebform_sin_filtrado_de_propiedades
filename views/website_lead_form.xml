@@ -34,7 +34,6 @@
                                "/>
                     </div>
 
-
                     <!-- Empresa -->
                     <div class="mb-3">
                         <label class="form-label">Edificio</label>
@@ -54,22 +53,25 @@
                         </select>
                     </div>
 
-                    <!-- Propiedad-->
+                    <!-- Propiedad -->
                     <div class="mb-3">
                         <label class="form-label">Unidad</label>
-                    
 
-                    
-                        <select name="x_property_id" class="form-select">
+                        <select name="x_property_id" id="x_property_id" class="form-select">
                             <option value="">Seleccionar</option>
                             <t t-foreach="properties" t-as="p">
-                                <option t-att-value="p.id">
+                                <option t-att-value="p.id"
+                                        t-att-data-occupied="'1' if p.id in occupied_property_ids else '0'">
                                     <t t-esc="p.display_name"/>
                                 </option>
                             </t>
                         </select>
-                    </div>
 
+                        <div id="property-occupied-warning"
+                             style="display:none; color:#b91c1c; background:#fee2e2; border:1px solid #fecaca; padding:10px; margin-top:8px; border-radius:6px;">
+                            Es posible que la unidad seleccionada no esté disponible para la fecha elegida de move-in. Puedes continuar con tu solicitud y nuestro equipo validará la disponibilidad.
+                        </div>
+                    </div>
 
                     <!-- Nombre Arrendatario -->
                     <div class="mb-3">
@@ -82,9 +84,8 @@
                     <!-- Teléfono -->
                     <div class="mb-3">
                         <label class="form-label">Número de teléfono *</label>
-                    
+
                         <div class="input-group">
-                            <!-- Código país -->
                             <select name="phone_country_code"
                                     class="form-select"
                                     style="max-width: 110px;"
@@ -98,8 +99,7 @@
                                     </t>
                                 </t>
                             </select>
-                    
-                            <!-- Número -->
+
                             <input type="tel"
                                    name="phone"
                                    class="form-control"
@@ -129,6 +129,29 @@
                     </button>
                 </form>
             </div>
+
+            <script type="text/javascript">
+                document.addEventListener('DOMContentLoaded', function () {
+                    var propertySelect = document.getElementById('x_property_id');
+                    var warningBox = document.getElementById('property-occupied-warning');
+
+                    function togglePropertyWarning() {
+                        if (!propertySelect || !warningBox) {
+                            return;
+                        }
+
+                        var selectedOption = propertySelect.options[propertySelect.selectedIndex];
+                        var isOccupied = selectedOption &amp;&amp; selectedOption.getAttribute('data-occupied') === '1';
+
+                        warningBox.style.display = isOccupied ? 'block' : 'none';
+                    }
+
+                    if (propertySelect) {
+                        propertySelect.addEventListener('change', togglePropertyWarning);
+                        togglePropertyWarning();
+                    }
+                });
+            </script>
         </t>
     </template>
 
