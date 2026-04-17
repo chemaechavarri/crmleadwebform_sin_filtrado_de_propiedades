@@ -8,6 +8,7 @@
     'data': [
         'views/website_lead_form.xml',
         'views/website_thank_you.xml',
+        'views/crm_lead_views.xml',
     ],
     'installable': True,
     'application': True,
