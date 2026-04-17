@@ -145,6 +145,48 @@ class WebsiteLeadWebForm(http.Controller):
             'description': post.get('description'),
         }
 
+        property_occupancy_warning = False
+        property_occupancy_message = False
+
+        selected_property_id = post.get('x_property_id')
+        move_in_date = post.get('date_deadline')
+
+        parsed_move_in_date = False
+        if move_in_date:
+            try:
+                parsed_move_in_date = datetime.strptime(move_in_date, "%Y-%m-%d").date()
+            except ValueError:
+                parsed_move_in_date = False
+
+        if selected_property_id and parsed_move_in_date:
+            try:
+                selected_property_id = int(selected_property_id)
+            except (TypeError, ValueError):
+                selected_property_id = False
+
+            if selected_property_id:
+                contracts = request.env['sale.order'].sudo().search([
+                    ('x_account_analytic_account_id', '=', selected_property_id),
+                    ('x_studio_fecha_de_fin_de_alquiler', '!=', False),
+                    ('state', '!=', 'cancel'),
+                ], order='x_studio_fecha_de_fin_de_alquiler desc')
+
+                if contracts:
+                    latest_end_date = contracts[0].x_studio_fecha_de_fin_de_alquiler
+
+                    if isinstance(latest_end_date, datetime):
+                        latest_end_date = latest_end_date.date()
+
+                    available_date = latest_end_date + timedelta(days=5)
+
+                    if parsed_move_in_date < available_date:
+                        property_occupancy_warning = True
+                        property_occupancy_message = (
+                            "Es posible que la unidad seleccionada no esté disponible "
+                            "para la fecha elegida de move-in. El prospecto continuó "
+                            "con la solicitud y se recomienda validar disponibilidad."
+                        )
+
         # Empresa
         if post.get('company_id'):
             vals['company_id'] = int(post.get('company_id'))
@@ -152,6 +194,8 @@ class WebsiteLeadWebForm(http.Controller):
         # Propiedad → Departamento de Interés
         if post.get('x_property_id'):
             vals['x_property_id'] = int(post.get('x_property_id'))
+            vals['x_web_property_occupancy_warning'] = property_occupancy_warning
+            vals['x_web_property_occupancy_message'] = property_occupancy_message
 
         if post.get('contact_name') or post.get('email_from') or post.get('phone'):
             partner = request.env['res.partner'].sudo().create({
